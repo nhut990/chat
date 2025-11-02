@@ -1,1 +1,341 @@
-f
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Test Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+      font-size: 18px;
+    }
+    h1 {
+      text-align: center;
+      color: #0078D4;
+      margin-bottom: 10px;
+    }
+    h2, h3 {
+      color: #333;
+      margin-top: 20px;
+    }
+    textarea {
+      width: 100%;
+      font-size: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    button {
+      font-size: 16px;
+      padding: 10px 20px;
+      background-color: #0078D4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    .note-card {
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      padding-bottom: 50px;
+      margin-top: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      position: relative;
+    }
+    .timestamp {
+      font-size: 14px;
+      color: #888;
+      margin-top: 8px;
+    }
+    .delete-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+    .deleted-label {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      color: green;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .action-buttons button {
+      flex: 1;
+      margin: 0;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #deleteAllBtn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+    }
+    #deleteAllBtn:hover {
+      background-color: #c0392b;
+    }
+    #downloadBtn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+    }
+    #downloadBtn:hover {
+      background-color: #218838;
+    }
+    #footer {
+      margin-top: 30px;
+      font-size: 16px;
+      color: #555;
+      text-align: center;
+    }
+    #message {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: white;
+      padding: 15px 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-weight: bold;
+      text-align: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+    }
+    #message.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .warning {
+      color: #e74c3c !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>Web Test Demo</h1>
+  <h2>📝 Ghi chú trực tuyến</h2>
+  <textarea id="noteInput" rows="5" placeholder="Nhập ghi chú tại đây..."></textarea>
+  <button onclick="saveNote()">Lưu ghi chú</button>
+
+  <h3>📌 Ghi chú đã lưu:</h3>
+  <div id="noteList"></div>
+
+  <div id="message"></div>
+
+  <div class="action-buttons">
+    <button id="deleteAllBtn" onclick="deleteAllNotes()">🗑️ Xóa tất cả ghi chú</button>
+    <button id="downloadBtn" onclick="downloadNotes()">📥 Tải toàn bộ ghi chú</button>
+  </div>
+
+  <div id="footer">
+    🌐 Đây là phiên bản thử nghiệm của hệ thống ghi chú trực tuyến, được thiết kế nhằm hỗ trợ đồng bộ hóa nội dung giữa các thành viên trong nhóm — giúp làm việc nhóm hiệu quả hơn, mọi người cùng nhìn thấy và cập nhật ghi chú theo thời gian thực.
+  </div>
+
+  <script>
+    var firebaseConfig = {
+      databaseURL: "https://test-nhut117117-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+    let noteCount = 0;
+
+    function saveNote() {
+      var note = document.getElementById("noteInput").value;
+      if (note.trim() !== "") {
+        var newNoteRef = database.ref("notes").push();
+        newNoteRef.set({
+          content: note,
+          timestamp: new Date().toISOString()
+        });
+        document.getElementById("noteInput").value = "";
+        showMessage("✅ Đã lưu ghi chú thành công!", "green");
+      } else {
+        showMessage("⚠️ Vui lòng nhập nội dung ghi chú!", "orange");
+      }
+    }
+
+    function formatDate(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleString('vi-VN', {
+        hour: '2-digit', minute: '2-digit',
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    }
+
+    function deleteNote(noteId, cardElement) {
+      const password = prompt("Nhập mật khẩu để xóa ghi chú:");
+      if (password === "898989") {
+        database.ref("notes/" + noteId).remove()
+          .then(() => {
+            const label = document.createElement("div");
+            label.className = "deleted-label";
+            label.textContent = "✅ Đã xoá";
+            cardElement.innerHTML = "";
+            cardElement.appendChild(label);
+            showMessage("✅ Đã xóa ghi chú thành công!", "green");
+            
+            // Tự động ẩn thẻ sau 3 giây
+            setTimeout(() => {
+              cardElement.style.display = "none";
+            }, 3000);
+          })
+          .catch((error) => {
+            showMessage("❌ Lỗi khi xóa: " + error.message, "red");
+          });
+      } else if (password !== null) {
+        showMessage("❌ Sai mật khẩu. Không thể xóa ghi chú.", "red");
+      }
+    }
+
+    function deleteAllNotes() {
+      if (noteCount === 0) {
+        showMessage("⚠️ Chưa có ghi chú để xóa.", "orange");
+        return;
+      }
+
+      const confirmDelete = confirm(`⚠️ BẠN CHẮC CHẮN MUỐN XÓA TẤT CẢ ${noteCount} GHI CHÚ?\n\nHành động này KHÔNG THỂ hoàn tác!`);
+      
+      if (confirmDelete) {
+        const password = prompt("Nhập mật khẩu để xác nhận xóa tất cả ghi chú:");
+        if (password === "898989") {
+          database.ref("notes").remove()
+            .then(() => {
+              showMessage("✅ Đã xóa tất cả ghi chú thành công!", "green");
+            })
+            .catch((error) => {
+              showMessage("❌ Lỗi khi xóa: " + error.message, "red");
+            });
+        } else if (password !== null) {
+          alert("❌ Sai mật khẩu. Không thể xóa ghi chú.");
+        }
+      }
+    }
+
+    function downloadNotes() {
+      if (noteCount === 0) {
+        showMessage("⚠️ Chưa có ghi chú để tải.", "orange");
+        return;
+      }
+
+      database.ref("notes").once("value", function(snapshot) {
+        let content = "";
+        const notesArray = [];
+        snapshot.forEach(function(childSnapshot) {
+          notesArray.push(childSnapshot.val());
+        });
+        notesArray.reverse();
+
+        notesArray.forEach(function(data) {
+          const time = formatDate(data.timestamp);
+          content += `📝 ${data.content}\n🕒 ${time}\n\n`;
+        });
+
+        const blob = new Blob(["\uFEFF" + content], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        const dateStr = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-');
+        link.download = `ghi_chu_${dateStr}.txt`;
+        link.click();
+        showMessage("✅ Đã tải xuống ghi chú thành công!", "green");
+      });
+    }
+
+    function showMessage(text, color) {
+      const msgElement = document.getElementById("message");
+      msgElement.textContent = text;
+      msgElement.style.color = color;
+      msgElement.classList.add("show");
+      
+      setTimeout(() => {
+        msgElement.classList.remove("show");
+      }, 5000);
+    }
+
+    database.ref("notes").on("value", function(snapshot) {
+      var noteList = document.getElementById("noteList");
+      noteList.innerHTML = "";
+      noteCount = 0;
+
+      const notesArray = [];
+      snapshot.forEach(function(childSnapshot) {
+        notesArray.push({
+          id: childSnapshot.key,
+          data: childSnapshot.val()
+        });
+      });
+
+      notesArray.reverse();
+      noteCount = notesArray.length;
+
+      if (noteCount === 0) {
+        noteList.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Chưa có ghi chú nào. Hãy thêm ghi chú đầu tiên!</div>';
+      }
+
+      notesArray.forEach(function(noteItem) {
+        var data = noteItem.data;
+        var noteId = noteItem.id;
+        var note = data.content;
+        var time = formatDate(data.timestamp);
+
+        var card = document.createElement("div");
+        card.className = "note-card";
+
+        var content = document.createElement("div");
+        content.textContent = note;
+
+        var timestamp = document.createElement("div");
+        timestamp.className = "timestamp";
+        timestamp.textContent = "🕒 " + time;
+
+        var deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "Xóa";
+        deleteBtn.onclick = function() {
+          deleteNote(noteId, card);
+        };
+
+        card.appendChild(content);
+        card.appendChild(timestamp);
+        card.appendChild(deleteBtn);
+        noteList.appendChild(card);
+      });
+    });
+  </script>
+
+</body>
+</html>

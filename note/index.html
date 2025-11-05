@@ -310,6 +310,7 @@
         });
       });
 
+      // Đảm bảo hiển thị ngược, và ID đúng với hiển thị DOM
       notesArray.reverse();
       noteCount = notesArray.length;
 
@@ -317,43 +318,44 @@
         noteList.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Chưa có ghi chú nào. Hãy thêm ghi chú đầu tiên!</div>';
       }
 
-      // Thêm số thứ tự ngược từ dưới lên (số thôi, không có "#", nằm dưới góc trái)
       for (let i = 0; i < notesArray.length; i++) {
-        var noteItem = notesArray[i];
-        var data = noteItem.data;
-        var noteId = noteItem.id;
-        var note = data.content;
-        var time = formatDate(data.timestamp);
+        const noteItem = notesArray[i];
+        const data = noteItem.data;
+        const noteId = noteItem.id;
+        const note = data.content;
+        const time = formatDate(data.timestamp);
 
-        var card = document.createElement("div");
+        const card = document.createElement("div");
         card.className = "note-card";
 
-        var content = document.createElement("div");
+        const content = document.createElement("div");
         content.textContent = note;
 
-        var timestamp = document.createElement("div");
+        const timestamp = document.createElement("div");
         timestamp.className = "timestamp";
         timestamp.textContent = "🕒 " + time;
 
-        var indexBadge = document.createElement("div");
+        const indexBadge = document.createElement("div");
         indexBadge.className = "note-index";
-        indexBadge.textContent = (noteCount - i); // Chỉ ghi số
+        indexBadge.textContent = (noteCount - i); // Chỉ là số thứ tự ngược (1 là mới nhất)
 
-        var deleteBtn = document.createElement("button");
+        const deleteBtn = document.createElement("button");
         deleteBtn.className = "delete-btn";
         deleteBtn.textContent = "Xóa";
-        deleteBtn.onclick = function() {
-          deleteNote(noteId, card);
-        };
+        // Sử dụng closure để đảm bảo đúng id khi xoá
+        deleteBtn.onclick = ((nid, cardEl) => {
+          return function() {
+            deleteNote(nid, cardEl);
+          };
+        })(noteId, card);
 
         card.appendChild(content);
         card.appendChild(timestamp);
-        card.appendChild(indexBadge); // Badge nằm cuối
+        card.appendChild(indexBadge);
         card.appendChild(deleteBtn);
         noteList.appendChild(card);
       }
     });
   </script>
-
 </body>
 </html>

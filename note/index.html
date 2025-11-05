@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -62,6 +61,19 @@
       font-size: 14px;
       color: #888;
       margin-top: 8px;
+    }
+    .note-index {
+      position: absolute;
+      bottom: 10px;
+      left: 16px;
+      background-color: #0078D4;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-weight: bold;
+      font-size: 17px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      user-select: none;
     }
     .delete-btn {
       position: absolute;
@@ -208,8 +220,6 @@
             cardElement.innerHTML = "";
             cardElement.appendChild(label);
             showMessage("✅ Đã xóa ghi chú thành công!", "green");
-            
-            // Tự động ẩn thẻ sau 3 giây
             setTimeout(() => {
               cardElement.style.display = "none";
             }, 3000);
@@ -260,9 +270,11 @@
         });
         notesArray.reverse();
 
-        notesArray.forEach(function(data) {
+        let totalNotes = notesArray.length;
+        notesArray.forEach(function(data, i) {
           const time = formatDate(data.timestamp);
-          content += `📝 ${data.content}\n🕒 ${time}\n\n`;
+          // Chỉ ghi số, không có ký tự #, ghi số thứ tự ngược (1 là mới nhất)
+          content += `${totalNotes - i} - 📝 ${data.content}\n🕒 ${time}\n\n`;
         });
 
         const blob = new Blob(["\uFEFF" + content], { type: "text/plain;charset=utf-8" });
@@ -280,7 +292,6 @@
       msgElement.textContent = text;
       msgElement.style.color = color;
       msgElement.classList.add("show");
-      
       setTimeout(() => {
         msgElement.classList.remove("show");
       }, 5000);
@@ -306,7 +317,9 @@
         noteList.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Chưa có ghi chú nào. Hãy thêm ghi chú đầu tiên!</div>';
       }
 
-      notesArray.forEach(function(noteItem) {
+      // Thêm số thứ tự ngược từ dưới lên (số thôi, không có "#", nằm dưới góc trái)
+      for (let i = 0; i < notesArray.length; i++) {
+        var noteItem = notesArray[i];
         var data = noteItem.data;
         var noteId = noteItem.id;
         var note = data.content;
@@ -322,6 +335,10 @@
         timestamp.className = "timestamp";
         timestamp.textContent = "🕒 " + time;
 
+        var indexBadge = document.createElement("div");
+        indexBadge.className = "note-index";
+        indexBadge.textContent = (noteCount - i); // Chỉ ghi số
+
         var deleteBtn = document.createElement("button");
         deleteBtn.className = "delete-btn";
         deleteBtn.textContent = "Xóa";
@@ -331,9 +348,10 @@
 
         card.appendChild(content);
         card.appendChild(timestamp);
+        card.appendChild(indexBadge); // Badge nằm cuối
         card.appendChild(deleteBtn);
         noteList.appendChild(card);
-      });
+      }
     });
   </script>
 

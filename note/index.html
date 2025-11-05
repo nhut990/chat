@@ -67,17 +67,17 @@
     .note-card {
       background-color: #ffffff;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px 15px 55px 15px;
-      margin-top: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border-radius: 16px;
+      padding: 15px 15px 60px 15px;
+      margin-top: 18px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
       position: relative;
-      min-height: 60px;
+      min-height: 68px;
     }
     .timestamp {
       font-size: 17px;
       color: #222;
-      margin-top: 8px;
+      margin-top: 7px;
       font-style: italic;
       display: flex;
       align-items: center;
@@ -85,43 +85,52 @@
     }
     .note-index {
       position: absolute;
-      bottom: 10px;
-      left: 10px;
+      bottom: 16px;
+      left: 16px;
       background-color: #0078D4;
       color: #fff;
-      padding: 0 13px;
-      min-width: 34px;
-      border-radius: 50%;
+      min-width: 42px;
+      border-radius: 22px;
       font-weight: bold;
       font-size: 22px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.10);
       user-select: none;
-      height: 34px;
-      line-height: 34px;
+      height: 38px;
+      line-height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 2;
+      padding: 0 14px;
     }
     .delete-btn {
       position: absolute;
-      bottom: 10px;
-      right: 10px;
+      bottom: 16px;
+      right: 16px;
       background-color: #e74c3c;
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 10px 26px;
-      font-size: 18px;
+      border-radius: 10px;
+      padding: 0 20px;
+      font-size: 20px;
       cursor: pointer;
+      height: 38px;
+      line-height: 38px;
+      min-width: unset;
+      width: auto;
+      box-sizing: border-box;
+      transition: background 0.22s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .delete-btn:hover {
       background-color: #c0392b;
     }
     .deleted-label {
       position: absolute;
-      bottom: 10px;
-      right: 10px;
+      bottom: 16px;
+      right: 16px;
       color: green;
       font-weight: bold;
       font-size: 16px;
@@ -134,10 +143,12 @@
     .action-buttons button {
       flex: 1;
       margin: 0;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 6px;
+      padding: 16px;
+      font-size: 18px;
+      border-radius: 12px;
       cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
     #deleteAllBtn {
       background-color: #e74c3c;
@@ -157,7 +168,7 @@
     }
     #footer {
       margin-top: 30px;
-      font-size: 16px;
+      font-size: 18px;
       color: #555;
       text-align: center;
     }
@@ -184,10 +195,11 @@
     .warning {
       color: #e74c3c !important;
     }
-    @media(max-width:500px) {
-      .note-card { font-size: 16px; padding: 10px 10px 50px 10px;}
-      .delete-btn, .note-index { font-size: 17px; min-width: 32px; height: 32px; line-height: 32px;}
-      .timestamp {font-size:15px;}
+    @media(max-width: 600px) {
+      .note-card { font-size: 16px; padding: 10px 10px 56px 10px;}
+      .note-index { font-size: 19px; min-width:32px; height:32px; line-height:32px; border-radius:17px; padding:0 7px;}
+      .delete-btn, .deleted-label { font-size: 17px; height:32px; border-radius:7px; }
+      .action-buttons button {font-size:16px;padding:10px;border-radius:8px;}
     }
   </style>
 </head>
@@ -263,7 +275,7 @@
             showMessage("✅ Đã xóa ghi chú thành công!", "green");
             setTimeout(() => {
               cardElement.style.display = "none";
-            }, 3000);
+            }, 2800);
           })
           .catch((error) => {
             showMessage("❌ Lỗi khi xóa: " + error.message, "red");
@@ -368,8 +380,7 @@
 
         const timestamp = document.createElement("div");
         timestamp.className = "timestamp";
-        // Sử dụng biểu tượng đồng hồ cũ cho sát bố cục
-        timestamp.innerHTML = `<span style="font-size:21px;vertical-align:middle">🕓</span> ${time}`;
+        timestamp.innerHTML = `<span style="font-size:26px;vertical-align:middle">🕓</span> <span style="margin-left:4px;font-size:21px;font-style:italic">${time}</span>`;
 
         const indexBadge = document.createElement("div");
         indexBadge.className = "note-index";
